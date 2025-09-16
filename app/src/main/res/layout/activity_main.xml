@@ -13,50 +13,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <ImageView
-        android:id="@+id/avatar_image"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="40dp"
-        android:layout_marginBottom="30dp"
-        android:src="@drawable/avatar1" />
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="选择头像: "
-            android:textSize="16sp" />
-
-        <RadioGroup
-            android:id="@+id/avatar_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/avatar1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true" />
-
-            <RadioButton
-                android:id="@+id/avatar2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <RadioButton
-                android:id="@+id/avatar3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </RadioGroup>
-    </LinearLayout>
-
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -83,14 +39,37 @@
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/login_button"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_marginTop="32dp"
-        android:text="登录"
-        android:textAllCaps="false"
-        android:textSize="16sp" />
+        android:weightSum="2">
+
+        <!-- 登录按钮占据一半宽度 -->
+        <Button
+            android:id="@+id/login_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="登录"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- 注册按钮占据一半宽度 -->
+        <Button
+            android:id="@+id/register_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="注册"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:backgroundTint="@color/gray_light"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/progress_layout"
         android:layout_width="match_parent"
@@ -108,20 +87,7 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <!-- 水平进度条 -->
-        <ProgressBar
-            android:id="@+id/login_progress_horizontal"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:layout_marginBottom="8dp"
-            android:max="100"
-            android:progress="0"
-            android:progressTint="@color/purple_500"
-            android:progressBackgroundTint="@color/gray_light"
-            />
-
-        <!-- 圆形进度条作为辅助视觉 -->
+        <!-- 圆形进度条 -->
         <ProgressBar
             android:id="@+id/login_progress_circular"
             android:layout_width="40dp"
@@ -129,16 +95,6 @@
             android:layout_marginTop="8dp"
             android:indeterminateTint="@color/black"  />
 
-
-        <!-- 进度百分比显示 -->
-        <TextView
-            android:id="@+id/progress_percent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="0%"
-            android:textSize="14sp"
-            />
 
     </LinearLayout>
 

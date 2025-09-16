@@ -1,65 +1,169 @@
 package com.example.myapplication;
 
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import java.util.ArrayList;
+
 import java.util.List;
 
 public class UserActivity extends AppCompatActivity {
+    private DatabaseHelper databaseHelper;
+    private ListView friendsList;
+    private FriendAdapter adapter;
+    private boolean isAdmin = false;
+    private LinearLayout adminButtonContainer;
+    private ImageView userAvatar;
+    private String currentUsername;
+    private int currentAvatarResId;
+
+    // 添加头像选择请求码
+    private static final int AVATAR_UPDATE_REQUEST_CODE = 2001;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_user);
+
+        // 初始化数据库
+        databaseHelper = new DatabaseHelper(this);
+
+        // 获取用户信息
+        currentUsername = getIntent().getStringExtra("username");
+        currentAvatarResId = getIntent().getIntExtra("avatarResId", R.drawable.avatar1);
+        isAdmin = getIntent().getBooleanExtra("isAdmin", false);
 
         // 设置自定义工具栏
         CustomToolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("用户信息");
-        toolbar.showBackButton(true); // 显示返回按钮
+        String title = isAdmin ? "管理员面板" : "用户信息";
+        toolbar.setTitle(title);
+        toolbar.showBackButton(true);
 
         // 设置返回按钮点击事件
         toolbar.setBackButtonClickListener(() -> {
-            finish(); // 关闭当前Activity，返回上一个页面
+            finish();
             overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
         });
 
-        // 获取传递过来的数据
-        String username = getIntent().getStringExtra("username");
-        int avatarResId = getIntent().getIntExtra("avatarResId", R.drawable.avatar1);
-
         // 显示用户信息
-        ImageView userAvatar = findViewById(R.id.user_avatar);
+        userAvatar = findViewById(R.id.user_avatar);
         TextView userName = findViewById(R.id.user_name);
+        userAvatar.setImageResource(currentAvatarResId);
 
-        userAvatar.setImageResource(avatarResId);
-        userName.setText("欢迎, " + username);
+        String welcomeText = isAdmin ? "管理员您好！" : "欢迎, " + currentUsername;
+        userName.setText(welcomeText);
+
+        // 设置头像点击事件
+        userAvatar.setOnClickListener(v -> {
+            openAvatarSelectionForUpdate();
+        });
+
+        // 获取管理员按钮容器
+        adminButtonContainer = findViewById(R.id.admin_button_container);
 
         // 设置好友列表
-        ListView friendsList = findViewById(R.id.friends_list);
-        List<Friend> friends = getFriendsData();
+        friendsList = findViewById(R.id.friends_list);
+        loadFriendsFromDatabase();
 
-        FriendAdapter adapter = new FriendAdapter(this, R.layout.friend_item, friends);
+        // 如果是管理员，显示用户管理按钮
+        if (isAdmin) {
+            showAdminFeatures();
+        }
+    }
+
+    private void openAvatarSelectionForUpdate() {
+        Intent intent = new Intent(UserActivity.this, AvatarSelectActivity.class);
+        intent.putExtra("currentAvatar", currentAvatarResId);
+        startActivityForResult(intent, AVATAR_UPDATE_REQUEST_CODE);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == AVATAR_UPDATE_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+            int selectedAvatar = data.getIntExtra("selectedAvatar", R.drawable.avatar1);
+
+            // 更新本地头像显示
+            currentAvatarResId = selectedAvatar;
+            userAvatar.setImageResource(selectedAvatar);
+
+            // 更新数据库中的头像信息
+            boolean updateSuccess = databaseHelper.updateUserAvatar(currentUsername, selectedAvatar);
+            if (updateSuccess) {
+                Toast.makeText(this, "头像更新成功", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "头像更新失败", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void loadFriendsFromDatabase() {
+        List<Friend> friends = databaseHelper.getAllFriends();
+        adapter = new FriendAdapter(this, R.layout.friend_item, friends);
         friendsList.setAdapter(adapter);
     }
-    private List<Friend> getFriendsData() {
-        List<Friend> friends = new ArrayList<>();
 
-        // 添加10个好友的基础信息
-        friends.add(new Friend("用户1", "休息一下", R.drawable.avatar4, true));
-        friends.add(new Friend("用户2", "学习中...", R.drawable.avatar5, true));
-        friends.add(new Friend("用户3", "忙碌中，请勿打扰", R.drawable.avatar6, false));
-        friends.add(new Friend("用户4", "在线", R.drawable.avatar7, true));
-        friends.add(new Friend("用户5", "刚刚更新了动态", R.drawable.avatar8, false));
-        return friends;
+    private void showAdminFeatures() {
+        // 显示管理员按钮容器
+        adminButtonContainer.setVisibility(View.VISIBLE);
+        adminButtonContainer.removeAllViews();
+
+        // 添加用户管理按钮
+        Button manageUsersButton = new Button(this);
+        manageUsersButton.setText("用户管理");
+        manageUsersButton.setAllCaps(false);
+        manageUsersButton.setTextSize(16);
+        manageUsersButton.setBackgroundColor(getResources().getColor(R.color.purple_500));
+        manageUsersButton.setTextColor(getResources().getColor(R.color.white));
+        manageUsersButton.setPadding(32, 16, 32, 16);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(0, 0, 0, 16);
+        manageUsersButton.setLayoutParams(params);
+
+        // 修改点击事件，跳转到新的用户管理页面
+        manageUsersButton.setOnClickListener(v -> {
+            Intent intent = new Intent(UserActivity.this, UserManagementActivity.class);
+            startActivity(intent);
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        });
+        adminButtonContainer.addView(manageUsersButton);
+
+        // 可以添加更多管理员功能按钮
+        Button refreshButton = new Button(this);
+        refreshButton.setText("刷新数据");
+        refreshButton.setAllCaps(false);
+        refreshButton.setTextSize(16);
+        refreshButton.setBackgroundColor(getResources().getColor(R.color.teal_700));
+        refreshButton.setTextColor(getResources().getColor(R.color.white));
+        refreshButton.setPadding(32, 16, 32, 16);
+        refreshButton.setOnClickListener(v -> refreshData());
+        adminButtonContainer.addView(refreshButton);
+    }
+
+    private void refreshData() {
+        loadFriendsFromDatabase();
+        Toast.makeText(this, "数据已刷新", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        // 添加返回动画
         overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
     }
 }

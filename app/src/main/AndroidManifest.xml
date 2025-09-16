@@ -24,5 +24,13 @@
             android:name=".UserActivity"
             android:screenOrientation="portrait"
             android:exported="false" />
+        <activity
+            android:name=".AvatarSelectActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".UserManagementActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MyApplication" />
     </application>
 </manifest>

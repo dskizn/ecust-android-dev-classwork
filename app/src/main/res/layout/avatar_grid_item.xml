@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="80dp"
+    android:layout_height="80dp"
+    android:padding="8dp">
+
+    <ImageView
+        android:id="@+id/avatar_image"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/avatar1"
+        android:alpha="0.5"/>
+
+    <!-- 选中边框 -->
+    <View
+        android:id="@+id/selection_border"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/avatar_selection_border"
+        android:visibility="gone"/>
+
+</RelativeLayout>

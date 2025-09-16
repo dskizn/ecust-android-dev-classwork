@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".UserManagementActivity">
+
+    <com.example.myapplication.CustomToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- 表头 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/gray_light"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="头像"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="用户名"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textSize="16sp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="权限"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <!-- 用户列表 -->
+    <ListView
+        android:id="@+id/user_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp"
+        android:padding="8dp"
+        android:scrollbars="vertical" />
+
+    <!-- 底部统计信息 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/gray_light">
+
+        <TextView
+            android:id="@+id/user_count_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="总计: 0 用户"
+            android:textSize="14sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/admin_count_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="管理员: 0"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/holo_red_dark" />
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="1dp" />
+
+        <TextView
+            android:id="@+id/normal_count_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="普通用户: 0"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/darker_gray" />
+
+    </LinearLayout>
+
+</LinearLayout>

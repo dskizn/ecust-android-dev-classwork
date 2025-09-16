@@ -29,6 +29,7 @@ public class CustomToolbar extends LinearLayout {
         titleText = findViewById(R.id.toolbar_title);
         backButton = findViewById(R.id.back_button);
 
+        // 设置返回按钮点击事件
         backButton.setOnClickListener(v -> {
             if (backButtonClickListener != null) {
                 backButtonClickListener.onBackButtonClick();
