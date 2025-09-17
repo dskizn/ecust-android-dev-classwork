@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".NumberPuzzleActivity">
+
+    <com.example.myapplication.CustomToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- 游戏信息 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/moves_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="步数: 0"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/timer_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="时间: 0s"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+    <!-- 游戏状态提示 -->
+    <TextView
+        android:id="@+id/game_status_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="拼图已完成！点击开始游戏"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:textColor="@color/green_700"
+        android:layout_marginBottom="16dp"
+        android:visibility="visible" />
+
+    <!-- 拼图容器  -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <!-- 拼图网格 -->
+        <GridLayout
+            android:id="@+id/puzzle_grid"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:columnCount="4"
+            android:rowCount="4"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+    <!-- 控制按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="24dp">
+
+        <Button
+            android:id="@+id/start_button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="开始游戏"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:backgroundTint="@color/green_700"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/restart_button"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="重置"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:backgroundTint="@color/blue_700"
+            android:textColor="@color/white"
+            android:enabled="false" />
+
+    </LinearLayout>
+
+</LinearLayout>

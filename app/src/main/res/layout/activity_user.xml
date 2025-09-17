@@ -26,7 +26,10 @@
             android:id="@+id/user_avatar"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
         <TextView
             android:id="@+id/user_name"
@@ -37,16 +40,98 @@
 
     </LinearLayout>
 
-    <!-- 管理员按钮容器 -->
+    <!-- 游戏按钮区域（对所有用户可见） -->
     <LinearLayout
-        android:id="@+id/admin_button_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="游戏中心"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/game_button"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="数字拼图游戏"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:backgroundTint="@color/teal_700"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+
+    <!-- 管理员功能区 -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:id="@+id/admin_section">
 
-        <!-- 按钮将动态添加到这里 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="管理员功能"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- 管理员按钮容器（水平布局） -->
+        <LinearLayout
+            android:id="@+id/admin_button_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="3">
+
+            <!-- 用户管理按钮 -->
+            <Button
+                android:id="@+id/user_manage_button"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="管理"
+                android:textAllCaps="false"
+                android:textSize="14sp"
+                android:backgroundTint="@color/purple_500"
+                android:textColor="@color/white" />
+
+            <!-- 刷新数据按钮 -->
+            <Button
+                android:id="@+id/refresh_button"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="刷新"
+                android:textAllCaps="false"
+                android:textSize="14sp"
+                android:backgroundTint="@color/orange_700"
+                android:textColor="@color/white" />
+
+            <!-- 系统设置按钮 -->
+            <Button
+                android:id="@+id/settings_button"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="设置"
+                android:textAllCaps="false"
+                android:textSize="14sp"
+                android:backgroundTint="@color/blue_700"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -66,6 +151,6 @@
         android:divider="@android:color/darker_gray"
         android:dividerHeight="1dp"
         android:padding="8dp"
-        android:scrollbars="vertical"
-        />
-    </LinearLayout>
+        android:scrollbars="vertical" />
+
+</LinearLayout>

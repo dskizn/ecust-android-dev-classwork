@@ -32,5 +32,9 @@
             android:name=".UserManagementActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.MyApplication" />
+        <activity
+            android:name=".NumberPuzzleActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MyApplication" />
     </application>
 </manifest>
