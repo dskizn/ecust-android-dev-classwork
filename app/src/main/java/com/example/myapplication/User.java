@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 public class User {
     private String username;
+    private String password;
     private int avatarResId;
     private boolean isAdmin;
 
@@ -11,8 +12,23 @@ public class User {
         this.isAdmin = isAdmin;
     }
 
+    public User(String username, String password, int avatarResId, boolean isAdmin) {
+        this.username = username;
+        this.password = password;
+        this.avatarResId = avatarResId;
+        this.isAdmin = isAdmin;
+    }
+
     public String getUsername() {
         return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public int getAvatarResId() {
@@ -25,5 +41,9 @@ public class User {
 
     public boolean isAdmin() {
         return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
     }
 }

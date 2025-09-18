@@ -79,7 +79,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String[] friendNames = {"用户1", "用户2", "用户3", "用户4", "用户5"};
         String[] statuses = {"休息一下", "学习中...", "忙碌中，请勿打扰", "在线", "刚刚更新了动态"};
         int[] avatars = {R.drawable.avatar4, R.drawable.avatar5, R.drawable.avatar6, R.drawable.avatar7, R.drawable.avatar8};
-        boolean[] onlineStatus = {true, true, false, true, true, false, true, true, false, true};
+        boolean[] onlineStatus = {true, true, false, true, false};
 
         for (int i = 0; i < friendNames.length; i++) {
             values.clear();
@@ -173,6 +173,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result > 0;
     }
 
+    // 修改用户名
+    public boolean updateUsername(String oldUsername, String newUsername) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // 检查新用户名是否已存在
+        if (isUsernameExists(newUsername)) {
+            return false;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_USERNAME, newUsername);
+
+        int result = db.update(TABLE_USERS, values, COLUMN_USERNAME + " = ?", new String[]{oldUsername});
+        return result > 0;
+    }
+
+    // 检查用户名是否存在
+    public boolean isUsernameExists(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String[] columns = {COLUMN_USER_ID};
+        String selection = COLUMN_USERNAME + " = ?";
+        String[] selectionArgs = {username};
+
+        Cursor cursor = db.query(TABLE_USERS, columns, selection, selectionArgs, null, null, null);
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        return exists;
+    }
+
     // 根据用户名获取用户信息
     public User getUserByUsername(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -242,28 +271,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return friends;
-    }
-    // ... 其他好友操作方法保持不变 ...
-    public long addFriend(Friend friend) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_FRIEND_NAME, friend.getName());
-        values.put(COLUMN_FRIEND_STATUS, friend.getStatus());
-        values.put(COLUMN_FRIEND_AVATAR, friend.getAvatarResId());
-        values.put(COLUMN_IS_ONLINE, friend.isOnline() ? 1 : 0);
-        return db.insert(TABLE_FRIENDS, null, values);
-    }
-
-    public int deleteFriend(String friendName) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        return db.delete(TABLE_FRIENDS, COLUMN_FRIEND_NAME + " = ?", new String[]{friendName});
-    }
-
-    public int updateFriendStatus(String friendName, String newStatus) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_FRIEND_STATUS, newStatus);
-        return db.update(TABLE_FRIENDS, values, COLUMN_FRIEND_NAME + " = ?", new String[]{friendName});
     }
 
     // 获取用户总数

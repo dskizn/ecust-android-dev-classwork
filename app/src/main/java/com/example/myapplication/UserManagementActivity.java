@@ -1,13 +1,16 @@
 package com.example.myapplication;
 
-import android.content.Intent;
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.List;
 
@@ -60,9 +63,11 @@ public class UserManagementActivity extends AppCompatActivity {
         List<User> users = databaseHelper.getAllUsers();
         adapter = new UserManagementAdapter(this, users);
         userListView.setAdapter(adapter);
+
         // 更新统计信息
         updateStatistics();
     }
+
     private void updateStatistics() {
         int totalUsers = databaseHelper.getTotalUserCount();
         int adminUsers = databaseHelper.getAdminUserCount();
@@ -76,30 +81,33 @@ public class UserManagementActivity extends AppCompatActivity {
     private void showUserOptions(User user) {
         String[] options;
         if (user.isAdmin()) {
-            options = new String[]{"查看详情", "取消管理员权限"};
+            options = new String[]{"查看详情", "修改用户名", "取消管理员权限"};
         } else {
-            options = new String[]{"查看详情", "设为管理员", "删除用户"};
+            options = new String[]{"查看详情", "修改用户名", "设为管理员", "删除用户"};
         }
 
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("用户操作 - " + user.getUsername())
                 .setItems(options, (dialog, which) -> {
                     switch (which) {
                         case 0: // 查看详情
                             showUserDetails(user);
                             break;
-                        case 1: // 权限操作
+                        case 1: // 修改用户名
+                            showEditUsernameDialog(user);
+                            break;
+                        case 2: // 权限操作或删除用户
                             if (user.isAdmin()) {
                                 updateUserAdminStatus(user.getUsername(), false);
                             } else {
-                                if (options.length > 2) {
+                                if (options.length > 3) {
                                     updateUserAdminStatus(user.getUsername(), true);
                                 } else {
                                     deleteUser(user.getUsername());
                                 }
                             }
                             break;
-                        case 2: // 删除用户
+                        case 3: // 删除用户
                             deleteUser(user.getUsername());
                             break;
                     }
@@ -108,8 +116,60 @@ public class UserManagementActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void showEditUsernameDialog(User user) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("修改用户名 - " + user.getUsername());
+
+        // 设置输入框
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setText(user.getUsername());
+        input.setSelection(input.getText().length()); // 将光标移到末尾
+        builder.setView(input);
+
+        // 设置按钮
+        builder.setPositiveButton("确认修改", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String newUsername = input.getText().toString().trim();
+                if (newUsername.isEmpty()) {
+                    Toast.makeText(UserManagementActivity.this, "用户名不能为空", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (newUsername.equals(user.getUsername())) {
+                    Toast.makeText(UserManagementActivity.this, "用户名未发生变化", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // 修改用户名
+                updateUsername(user.getUsername(), newUsername);
+            }
+        });
+
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    private void updateUsername(String oldUsername, String newUsername) {
+        boolean success = databaseHelper.updateUsername(oldUsername, newUsername);
+        if (success) {
+            Toast.makeText(this, "用户名修改成功", Toast.LENGTH_SHORT).show();
+            // 刷新列表
+            loadUsers();
+        } else {
+            Toast.makeText(this, "用户名修改失败，可能用户名已存在", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void showUserDetails(User user) {
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("用户详情")
                 .setMessage("用户名: " + user.getUsername() + "\n" +
                         "身份: " + (user.isAdmin() ? "管理员" : "普通用户") + "\n" +
@@ -121,7 +181,7 @@ public class UserManagementActivity extends AppCompatActivity {
     private void updateUserAdminStatus(String username, boolean isAdmin) {
         // 这里需要实现更新用户权限的数据库操作
         Toast.makeText(this, "用户权限更新功能待实现: " + username + " -> " + (isAdmin ? "管理员" : "普通用户"), Toast.LENGTH_SHORT).show();
-        // 刷新列表和统计信息
+        // 刷新列表
         loadUsers();
     }
 
@@ -131,7 +191,7 @@ public class UserManagementActivity extends AppCompatActivity {
             return;
         }
 
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("确认删除")
                 .setMessage("确定要删除用户 " + username + " 吗？")
                 .setPositiveButton("删除", (dialog, which) -> {
