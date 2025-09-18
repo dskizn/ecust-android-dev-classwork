@@ -39,14 +39,10 @@ public class NumberPuzzleActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_number_puzzle);
 
-        // 设置自定义工具栏
         CustomToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("数字拼图游戏");
         toolbar.showBackButton(true);
-        toolbar.setBackButtonClickListener(() -> {
-            finish();
-            overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
-        });
+        toolbar.setBackButtonClickListener(this::finish);
 
         puzzleGrid = findViewById(R.id.puzzle_grid);
         movesTextView = findViewById(R.id.moves_text);
@@ -55,19 +51,11 @@ public class NumberPuzzleActivity extends AppCompatActivity {
         startButton = findViewById(R.id.start_button);
         restartButton = findViewById(R.id.restart_button);
 
-        // 初始化计时器
         timerHandler = new Handler(Looper.getMainLooper());
-
-        // 初始化游戏（显示完成状态）
         initializeCompletedPuzzle();
 
-        startButton.setOnClickListener(v -> {
-            startGame();
-        });
-
-        restartButton.setOnClickListener(v -> {
-            resetGame();
-        });
+        startButton.setOnClickListener(v -> startGame());
+        restartButton.setOnClickListener(v -> resetGame());
     }
 
     private void initializeCompletedPuzzle() {
@@ -75,17 +63,14 @@ public class NumberPuzzleActivity extends AppCompatActivity {
         for (int i = 1; i <= GRID_SIZE * GRID_SIZE - 1; i++) {
             numbers.add(i);
         }
-        numbers.add(0); // 0 表示空位
+        numbers.add(0);
         emptyPosition = GRID_SIZE * GRID_SIZE - 1;
-
         updateGrid();
         disableAllButtons();
     }
 
     private void startGame() {
-        // 打乱拼图（确保可解）
         shufflePuzzle();
-
         gameStarted = true;
         gameCompleted = false;
         moveCount = 0;
@@ -103,70 +88,28 @@ public class NumberPuzzleActivity extends AppCompatActivity {
     }
 
     private void shufflePuzzle() {
-        int attempts = 0;
-        int maxAttempts = 1000; // 防止无限循环
-
-        do {
-            // 从完成状态开始，通过随机移动来打乱
-            initializeCompletedPuzzle();
-
-            // 随机移动100-200步来打乱
-            int shuffleMoves = 100 + (int)(Math.random() * 101);
-            for (int i = 0; i < shuffleMoves; i++) {
-                makeRandomMove();
-            }
-
-            attempts++;
-            if (attempts > maxAttempts) {
-                // 如果尝试次数过多，使用备用方法
-                useAlternativeShuffle();
-                break;
-            }
-        } while (isPuzzleSolved()); // 确保不是已经完成的状态
+        initializeCompletedPuzzle();
+        int shuffleMoves = 100 + (int)(Math.random() * 101);
+        for (int i = 0; i < shuffleMoves; i++) {
+            makeRandomMove();
+        }
     }
 
     private void makeRandomMove() {
         int emptyRow = emptyPosition / GRID_SIZE;
         int emptyCol = emptyPosition % GRID_SIZE;
-
         List<Integer> possibleMoves = new ArrayList<>();
 
-        // 检查上方的方块
-        if (emptyRow > 0) {
-            possibleMoves.add((emptyRow - 1) * GRID_SIZE + emptyCol);
-        }
-        // 检查下方的方块
-        if (emptyRow < GRID_SIZE - 1) {
-            possibleMoves.add((emptyRow + 1) * GRID_SIZE + emptyCol);
-        }
-        // 检查左方的方块
-        if (emptyCol > 0) {
-            possibleMoves.add(emptyRow * GRID_SIZE + (emptyCol - 1));
-        }
-        // 检查右方的方块
-        if (emptyCol < GRID_SIZE - 1) {
-            possibleMoves.add(emptyRow * GRID_SIZE + (emptyCol + 1));
-        }
+        if (emptyRow > 0) possibleMoves.add((emptyRow - 1) * GRID_SIZE + emptyCol);
+        if (emptyRow < GRID_SIZE - 1) possibleMoves.add((emptyRow + 1) * GRID_SIZE + emptyCol);
+        if (emptyCol > 0) possibleMoves.add(emptyRow * GRID_SIZE + (emptyCol - 1));
+        if (emptyCol < GRID_SIZE - 1) possibleMoves.add(emptyRow * GRID_SIZE + (emptyCol + 1));
 
         if (!possibleMoves.isEmpty()) {
-            // 随机选择一个可移动的方块
             int randomMove = possibleMoves.get((int)(Math.random() * possibleMoves.size()));
             Collections.swap(numbers, emptyPosition, randomMove);
             emptyPosition = randomMove;
         }
-    }
-
-    private void useAlternativeShuffle() {
-        // 备用方法：使用经典的可解性检查
-        do {
-            numbers = new ArrayList<>();
-            for (int i = 1; i <= GRID_SIZE * GRID_SIZE - 1; i++) {
-                numbers.add(i);
-            }
-            numbers.add(0);
-            Collections.shuffle(numbers);
-            emptyPosition = numbers.indexOf(0);
-        } while (!isSolvable() || isPuzzleSolved());
     }
 
     private void resetGame() {
@@ -208,9 +151,7 @@ public class NumberPuzzleActivity extends AppCompatActivity {
                 numberButton.setBackgroundResource(R.drawable.puzzle_button_bg);
 
                 if (gameStarted && !gameCompleted) {
-                    numberButton.setOnClickListener(v -> {
-                        moveNumber(position);
-                    });
+                    numberButton.setOnClickListener(v -> moveNumber(position));
                 }
             } else {
                 numberButton.setText("");
@@ -225,7 +166,6 @@ public class NumberPuzzleActivity extends AppCompatActivity {
     private void moveNumber(int position) {
         if (gameCompleted) return;
 
-        // 检查是否与空位相邻
         int row = position / GRID_SIZE;
         int col = position % GRID_SIZE;
         int emptyRow = emptyPosition / GRID_SIZE;
@@ -234,14 +174,12 @@ public class NumberPuzzleActivity extends AppCompatActivity {
         if ((Math.abs(row - emptyRow) == 1 && col == emptyCol) ||
                 (Math.abs(col - emptyCol) == 1 && row == emptyRow)) {
 
-            // 交换数字
             Collections.swap(numbers, position, emptyPosition);
             emptyPosition = position;
             moveCount++;
             updateMovesText();
             updateGrid();
 
-            // 检查是否完成
             if (isPuzzleSolved()) {
                 gameCompleted = true;
                 stopTimer();
@@ -257,11 +195,9 @@ public class NumberPuzzleActivity extends AppCompatActivity {
     private void enableMovableButtons() {
         for (int i = 0; i < puzzleGrid.getChildCount(); i++) {
             Button button = (Button) puzzleGrid.getChildAt(i);
-            if (button.getText().length() > 0) { // 不是空位
+            if (button.getText().length() > 0) {
                 final int position = i;
-                button.setOnClickListener(v -> {
-                    moveNumber(position);
-                });
+                button.setOnClickListener(v -> moveNumber(position));
             }
         }
     }
@@ -278,8 +214,7 @@ public class NumberPuzzleActivity extends AppCompatActivity {
     }
 
     private void startTimer() {
-        stopTimer(); // 确保之前的计时器停止
-
+        stopTimer();
         timerRunnable = new Runnable() {
             @Override
             public void run() {
@@ -308,45 +243,9 @@ public class NumberPuzzleActivity extends AppCompatActivity {
         return numbers.get(numbers.size() - 1) == 0;
     }
 
-    private boolean isSolvable() {
-        int inversionCount = 0;
-        List<Integer> numbersWithoutZero = new ArrayList<>();
-
-        // 移除0并计算逆序数
-        for (int num : numbers) {
-            if (num != 0) {
-                numbersWithoutZero.add(num);
-            }
-        }
-
-        // 计算逆序数
-        for (int i = 0; i < numbersWithoutZero.size() - 1; i++) {
-            for (int j = i + 1; j < numbersWithoutZero.size(); j++) {
-                if (numbersWithoutZero.get(i) > numbersWithoutZero.get(j)) {
-                    inversionCount++;
-                }
-            }
-        }
-
-        // 对于4x4拼图（偶数网格）
-        int emptyRowFromBottom = GRID_SIZE - (emptyPosition / GRID_SIZE);
-
-        if (emptyRowFromBottom % 2 == 0) { // 空位在偶数行（从底部数）
-            return inversionCount % 2 == 1;
-        } else { // 空位在奇数行（从底部数）
-            return inversionCount % 2 == 0;
-        }
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         stopTimer();
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
     }
 }

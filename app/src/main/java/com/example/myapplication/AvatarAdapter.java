@@ -25,12 +25,6 @@ public class AvatarAdapter extends ArrayAdapter<AvatarItem> {
 
     public void setSelectedPosition(int position) {
         this.selectedPosition = position;
-        for (int i = 0; i < getCount(); i++) {
-            AvatarItem item = getItem(i);
-            if (item != null) {
-                item.setSelected(i == position);
-            }
-        }
         notifyDataSetChanged();
     }
 
@@ -56,12 +50,10 @@ public class AvatarAdapter extends ArrayAdapter<AvatarItem> {
             viewHolder.avatarImage.setImageResource(avatarItem.getAvatarResId());
 
             // 设置不透明度和边框
-            if (avatarItem.isSelected()) {
-                // 选中状态：完全显示 + 边框
+            if (position == selectedPosition) {
                 viewHolder.avatarImage.setAlpha(1.0f);
                 viewHolder.selectionBorder.setVisibility(View.VISIBLE);
             } else {
-                // 未选中状态：50%透明度 + 无边框
                 viewHolder.avatarImage.setAlpha(0.5f);
                 viewHolder.selectionBorder.setVisibility(View.GONE);
             }
