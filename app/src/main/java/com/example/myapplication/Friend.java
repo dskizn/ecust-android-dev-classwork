@@ -28,4 +28,21 @@ public class Friend {
     public boolean isOnline() {
         return isOnline;
     }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setAvatarResId(int avatarResId) {
+        this.avatarResId = avatarResId;
+    }
+
+    public void setOnline(boolean online) {
+        isOnline = online;
+    }
+
+
 }

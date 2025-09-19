@@ -13,10 +13,16 @@ import java.util.List;
 
 public class FriendAdapter extends ArrayAdapter<Friend> {
     private int resourceId;
+    private OnFriendClickListener onFriendClickListener; // 添加监听器字段
 
     public FriendAdapter(Context context, int resource, List<Friend> objects) {
         super(context, resource, objects);
         resourceId = resource;
+    }
+
+    // 添加设置监听器的方法
+    public void setOnFriendClickListener(OnFriendClickListener listener) {
+        this.onFriendClickListener = listener;
     }
 
     @NonNull
@@ -40,26 +46,42 @@ public class FriendAdapter extends ArrayAdapter<Friend> {
         }
 
         if (friend != null) {
-            viewHolder.avatar.setImageResource(friend.getAvatarResId());
+            int avatarResId = friend.getAvatarResId();
+            if (avatarResId <= 0) {
+                avatarResId = R.drawable.avatar1;
+            }
+
+            viewHolder.avatar.setImageResource(avatarResId);
             viewHolder.name.setText(friend.getName());
             viewHolder.status.setText(friend.getStatus());
 
-            // 设置在线状态
+            // 设置在线状态 - 所有用户都显示为离线
+            viewHolder.onlineStatus.setVisibility(View.VISIBLE);
             if (friend.isOnline()) {
-                viewHolder.onlineStatus.setVisibility(View.VISIBLE);
                 viewHolder.onlineStatus.setBackgroundResource(R.drawable.online_status_bg);
             } else {
-                viewHolder.onlineStatus.setVisibility(View.INVISIBLE);
+                // 离线状态使用灰色背景
+                viewHolder.onlineStatus.setBackgroundResource(R.drawable.offline_status_bg);
             }
+            // 设置点击事件
+            view.setOnClickListener(v -> {
+                if (onFriendClickListener != null) {
+                    onFriendClickListener.onFriendClick(friend);
+                }
+            });
         }
 
         return view;
     }
 
-    class ViewHolder {
+    static class ViewHolder {
         ImageView avatar;
         TextView name;
         TextView status;
         View onlineStatus;
+    }
+
+    public interface OnFriendClickListener {
+        void onFriendClick(Friend friend);
     }
 }

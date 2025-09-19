@@ -84,6 +84,31 @@ public class UserActivity extends AppCompatActivity {
         }
     }
 
+    private void loadFriendsFromDatabase() {
+        List<Friend> friends = databaseHelper.getAllUsersAsFriends();
+        // 为每个好友添加未读消息数量
+        for (Friend friend : friends) {
+            if (!friend.getName().replace(" (管理员)", "").equals(currentUsername)) {
+                //int unreadCount = databaseHelper.getUnreadMessageCount(currentUsername, friend.getName());
+
+            }
+        }
+        adapter = new FriendAdapter(this, R.layout.friend_item, friends);
+        // 设置好友点击监听器
+        adapter.setOnFriendClickListener(friend -> {
+            openChatWithFriend (friend);
+        });
+        friendsList.setAdapter(adapter);
+    }
+
+    private void openChatWithFriend(Friend friend) {
+        Intent intent = new Intent(UserActivity.this, ChatActivity.class);
+        intent.putExtra("currentUser", currentUsername);
+        intent.putExtra("chatWithUser", friend.getName().replace(" (管理员)", "")); // 移除管理员标识
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
     private void showAdminFeatures() {
         // 显示管理员功能区
         adminSection.setVisibility(View.VISIBLE);
@@ -136,12 +161,6 @@ public class UserActivity extends AppCompatActivity {
                 Toast.makeText(this, "头像更新失败", Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
-    private void loadFriendsFromDatabase() {
-        List<Friend> friends = databaseHelper.getAllFriends();
-        adapter = new FriendAdapter(this, R.layout.friend_item, friends);
-        friendsList.setAdapter(adapter);
     }
 
     private void refreshData() {

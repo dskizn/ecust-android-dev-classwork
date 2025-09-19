@@ -10,7 +10,7 @@ import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "LoginApp.db";
-    private static final int DATABASE_VERSION = 2; // 版本号升级
+    private static final int DATABASE_VERSION = 3; // 版本号升级
 
     // 用户表
     private static final String TABLE_USERS = "users";
@@ -27,14 +27,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_FRIEND_STATUS = "status";
     private static final String COLUMN_FRIEND_AVATAR = "avatar";
     private static final String COLUMN_IS_ONLINE = "is_online";
+    // 聊天信息表
+    private static final String TABLE_MESSAGES = "messages";
+    private static final String COLUMN_MESSAGE_ID = "message_id";
+    private static final String COLUMN_SENDER = "sender";
+    private static final String COLUMN_RECEIVER = "receiver";
+    private static final String COLUMN_CONTENT = "content";
+    private static final String COLUMN_TIMESTAMP = "timestamp";
+    private static final String COLUMN_IS_READ = "is_read";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+
+
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // 创建用户表（新增is_admin字段）
+        // 创建用户表
         String CREATE_USERS_TABLE = "CREATE TABLE " + TABLE_USERS + "("
                 + COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_USERNAME + " TEXT UNIQUE,"
@@ -51,6 +61,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COLUMN_FRIEND_AVATAR + " INTEGER,"
                 + COLUMN_IS_ONLINE + " INTEGER" + ")";
         db.execSQL(CREATE_FRIENDS_TABLE);
+
+        // 创建消息表
+        String CREATE_MESSAGES_TABLE = "CREATE TABLE " + TABLE_MESSAGES + "("
+                + COLUMN_MESSAGE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_SENDER + " TEXT,"
+                + COLUMN_RECEIVER + " TEXT,"
+                + COLUMN_CONTENT + " TEXT,"
+                + COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + COLUMN_IS_READ + " INTEGER DEFAULT 0" + ")";
+        db.execSQL(CREATE_MESSAGES_TABLE);
 
         // 插入初始数据
         insertInitialData(db);
@@ -73,22 +93,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // 插入示例普通用户
         insertUser(db, "user1", "password123", R.drawable.avatar2, 0);
         insertUser(db, "test", "test123", R.drawable.avatar3, 0);
+        insertUser(db, "jack", "jack123", R.drawable.avatar4, 0);
+        insertUser(db, "lily", "lily123", R.drawable.avatar5, 0);
+        insertUser(db, "tom", "tom123", R.drawable.avatar6, 0);
 
-        // 插入好友数据
-        ContentValues values = new ContentValues();
-        String[] friendNames = {"user1", "user2", "user3", "user4", "user5"};
-        String[] statuses = {"休息一下", "学习中...", "忙碌中，请勿打扰", "在线", "刚刚更新了动态"};
-        int[] avatars = {R.drawable.avatar4, R.drawable.avatar5, R.drawable.avatar6, R.drawable.avatar7, R.drawable.avatar8};
-        boolean[] onlineStatus = {true, true, false, true, false};
-
-        for (int i = 0; i < friendNames.length; i++) {
-            values.clear();
-            values.put(COLUMN_FRIEND_NAME, friendNames[i]);
-            values.put(COLUMN_FRIEND_STATUS, statuses[i]);
-            values.put(COLUMN_FRIEND_AVATAR, avatars[i]);
-            values.put(COLUMN_IS_ONLINE, onlineStatus[i] ? 1 : 0);
-            db.insert(TABLE_FRIENDS, null, values);
-        }
     }
 
     private void insertAdminUser(SQLiteDatabase db) {
@@ -220,24 +228,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.delete(TABLE_USERS, COLUMN_USERNAME + " = ?", new String[]{username});
     }
 
-    // 好友操作
-    public List<Friend> getAllFriends() {
+
+    // 添加获取所有用户作为好友的方法（包括当前用户）
+    public List<Friend> getAllUsersAsFriends() {
         List<Friend> friends = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        String[] columns = {COLUMN_FRIEND_ID, COLUMN_FRIEND_NAME, COLUMN_FRIEND_STATUS,
-                COLUMN_FRIEND_AVATAR, COLUMN_IS_ONLINE};
 
-        Cursor cursor = db.query(TABLE_FRIENDS, columns, null, null, null, null, null);
+        String[] columns = {COLUMN_USERNAME, COLUMN_AVATAR, COLUMN_IS_ADMIN};
+
+        Cursor cursor = db.query(TABLE_USERS, columns, null, null, null, null, null);
 
         if (cursor.moveToFirst()) {
             do {
+                String username = cursor.getString(0);
+                int avatarResId = cursor.getInt(1);
+                boolean isAdmin = cursor.getInt(2) == 1;
+
+                String[] statusOptions = {
+                        "在线学习中", "休息一下", "忙碌中", "刚刚上线",
+                        "离开中", "正在会议", "专注工作", "放松一下"
+                };
+                String randomStatus = statusOptions[(int)(Math.random() * statusOptions.length)];
+                // 直接使用用户名
+                String displayName = username;
+
                 Friend friend = new Friend(
-                        cursor.getString(1), // name
-                        cursor.getString(2), // status
-                        cursor.getInt(3),    // avatar
-                        cursor.getInt(4) == 1 // isOnline
+                        displayName,        // 显示名称
+                        randomStatus,       // 随机状态
+                        avatarResId,        // 用户头像
+                        false               // 设置为离线状态
                 );
                 friends.add(friend);
+
             } while (cursor.moveToNext());
         }
         cursor.close();
@@ -273,6 +295,76 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return exists;
     }
 
+    // 保存消息到数据库
+    public long saveMessage(String sender, String receiver, String content) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SENDER, sender);
+        values.put(COLUMN_RECEIVER, receiver);
+        values.put(COLUMN_CONTENT, content);
+
+        long result = db.insert(TABLE_MESSAGES, null, values);
+        db.close();
+        return result;
+    }
+
+    // 获取两个用户之间的聊天记录
+    public List<Message> getChatMessages(String user1, String user2) {
+        List<Message> messages = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT * FROM " + TABLE_MESSAGES
+                + " WHERE (" + COLUMN_SENDER + " = ? AND " + COLUMN_RECEIVER + " = ?)"
+                + " OR (" + COLUMN_SENDER + " = ? AND " + COLUMN_RECEIVER + " = ?)"
+                + " ORDER BY " + COLUMN_TIMESTAMP + " ASC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{user1, user2, user2, user1});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Message message = new Message();
+                message.setMessageId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_ID)));
+                message.setSender(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SENDER)));
+                message.setReceiver(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECEIVER)));
+                message.setContent(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONTENT)));
+                message.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+                message.setRead(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_READ)) == 1);
+
+                messages.add(message);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return messages;
+    }
+
+    // 获取用户的所有未读消息数量
+    public int getUnreadMessageCount(String currentUsername, String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + TABLE_MESSAGES
+                + " WHERE " + COLUMN_RECEIVER + " = ? AND " + COLUMN_IS_READ + " = 0";
+
+        Cursor cursor = db.rawQuery(query, new String[]{username});
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        db.close();
+        return count;
+    }
+
+    // 标记消息为已读
+    public void markMessagesAsRead(String sender, String receiver) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_IS_READ, 1);
+
+        db.update(TABLE_MESSAGES, values,
+                COLUMN_SENDER + " = ? AND " + COLUMN_RECEIVER + " = ? AND " + COLUMN_IS_READ + " = 0",
+                new String[]{sender, receiver});
+        db.close();
+    }
     // 获取用户总数
     public int getTotalUserCount() {
         SQLiteDatabase db = this.getReadableDatabase();

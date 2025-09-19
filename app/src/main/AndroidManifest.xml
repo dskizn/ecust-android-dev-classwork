@@ -36,5 +36,8 @@
             android:name=".NumberPuzzleActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.MyApplication" />
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false" />
     </application>
 </manifest>
